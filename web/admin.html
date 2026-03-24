@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octothorp Data Injection Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .admin-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #4bd8d6;
+            margin-top: 0;
+            font-weight: 900;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #8b949e;
+        }
+        select, input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            color: #c9d1d9;
+            box-sizing: border-box;
+            outline: none;
+        }
+        select:focus, input[type="text"]:focus {
+            border-color: #4bd8d6;
+        }
+        .btn {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background-color: #2ea043;
+        }
+        .btn-clear {
+            background-color: #da3633;
+            margin-top: 10px;
+        }
+        .btn-clear:hover {
+            background-color: #f85149;
+        }
+        .instructions {
+            background-color: #1f2428;
+            padding: 15px;
+            border-left: 4px solid #4bd8d6;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .status {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        .success { color: #4bd8d6; }
+        .error { color: #f85149; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-card">
+        <h1>OCTOTHORP ADMIN</h1>
+        
+        <div class="instructions">
+            <strong>Data Injection Protocol:</strong><br>
+            Select a target chart from the main application below. You can either provide a CSV file to parse static data directly into browser memory OR provide a REST API endpoint that returns properly formatted JSON when the chart loads.
+        </div>
+
+        <div class="form-group">
+            <label for="sourceSelect">Power Source Matrix:</label>
+            <select id="sourceSelect">
+                <option value="solar">Solar Power</option>
+                <option value="eb">EB Power</option>
+                <option value="generator">Generator Power</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="chartSelect">Target Chart ID:</label>
+            <select id="chartSelect">
+                <!-- Dashboard -->
+                <option value="totalPowerChart">Dashboard - Total Power</option>
+                <option value="aqiChart">Dashboard - Air Quality</option>
+                <option value="tempChart">Dashboard - Temperature (Bar)</option>
+                <option value="pieChart">Dashboard - Usage (Pie)</option>
+                <!-- Power Consumption -->
+                <option value="pcCurrent">Power Consumption - Current</option>
+                <option value="pcPower">Power Consumption - Power</option>
+                <option value="pcVoltage">Power Consumption - Voltage</option>
+                <option value="pcAverage">Power Consumption - Average</option>
+                <!-- Current Specific -->
+                <option value="curR">Current - R Phase</option>
+                <option value="curB">Current - B Phase</option>
+                <option value="curY">Current - Y Phase</option>
+                <option value="curHarmonic">Current - Harmonic</option>
+                <!-- Voltage Specific -->
+                <option value="volRY">Voltage - RY</option>
+                <option value="volYB">Voltage - YB</option>
+                <option value="volBR">Voltage - BR</option>
+                <option value="volHarmonic">Voltage - Harmonic</option>
+                <!-- Power Specific -->
+                <option value="powActive">Power - Active</option>
+                <option value="powFactor">Power - Factor</option>
+                <option value="powReactive">Power - Reactive</option>
+                <option value="powHarmonic">Power - Harmonic</option>
+                <!-- Monitoring -->
+                <option value="mon1">Monitoring - Chart 1</option>
+                <option value="mon2">Monitoring - Chart 2</option>
+                <option value="mon3">Monitoring - Chart 3</option>
+                <option value="mon4">Monitoring - Chart 4</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="csvUpload">Upload CSV Payload (Optional):</label>
+            <input type="file" id="csvUpload" accept=".csv">
+            <small style="color:#8b949e; display:block; margin-top:5px;">Format: First row labels, second+ rows data. (e.g. mon,tues,wed\n10,20,30)</small>
+        </div>
+
+        <div class="form-group" style="text-align:center; color:#8b949e;">
+            <strong>- OR -</strong>
+        </div>
+
+        <div class="form-group">
+            <label for="apiUrl">Dynamic API Endpoint URL (Optional):</label>
+            <input type="text" id="apiUrl" placeholder="https://api.example.com/data">
+            <small style="color:#8b949e; display:block; margin-top:5px;">Must return valid Chart.js data object: {labels: [], datasets: []}</small>
+        </div>
+
+        <button class="btn" onclick="saveConfiguration()">Commit to Dashboard Database</button>
+        <button class="btn btn-clear" onclick="clearConfiguration()">Wipe Target Configuration (Revert to Mock)</button>
+        
+        <div id="statusMessage" class="status"></div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
